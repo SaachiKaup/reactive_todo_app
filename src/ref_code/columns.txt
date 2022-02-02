@@ -1,0 +1,45 @@
+
+      /*hideInTable: true,
+        search: {
+          transform: (value) => {
+            return {
+            startTime: value[0],
+            endTime: value[1],
+            };
+          },
+        },
+      hideInSearch: true,*/
+      /* Description and old created at
+      {
+        title: 'Description',
+        dataIndex: 'description',
+        key: 'description',
+        filters: [
+          { text: 'London', value: 'London' },
+          { text: 'New York', value: 'New York' },
+        ],
+        filteredValue: filteredInfo.description || null,
+        onFilter: (value, record) => record.description.includes(value),
+        sorter: (a, b) => a.description.length - b.description.length,
+        sortOrder: sortedInfo.columnKey === 'description' && sortedInfo.order,
+        ellipsis: true,
+      },
+      {
+      title: 'Created At',
+      key: 'showTime',
+      dataIndex: 'created_at',
+      valueType: 'dateTime',
+      sorter: true,
+      hideInSearch: true,
+      sorter: (a, b) => a.timestamp - b.timestamp,
+      sortOrder: sortedInfo.columnKey === 'created_at' && sortedInfo.order,
+      ellipsis: true,
+      },*/
+
+      /* //tags
+      {
+        title: 'Tags',
+        key: 'tags',
+        dataIndex: 'tags',
+        tag: 'hel'
+      },*/

@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 const e = React.createElement;
-
+//buttons
+<Button onClick={this.setAgeSort}>Sort Due Date</Button>
 class LikeButton extends React.Component {
   constructor(props) {
     super(props);
