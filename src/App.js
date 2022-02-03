@@ -1,6 +1,6 @@
 //import {Form} from 'react-bootstrap/';
 import React, {useState, useRef, useContext, useEffect} from 'react';
-import { Table, Input, InputNumber, Tag, Button, Space, Popconfirm, Switch, Menu, Dropdown, Typography} from 'antd';
+import { Table, Input, InputNumber, Tag, Button, Space, Popconfirm, Switch, Menu, Dropdown, Select, message, Typography} from 'antd';
 import ProTable, {TableDropdown} from '@ant-design/pro-table'
 import 'antd/dist/antd.css';
 import './index.css';
@@ -8,8 +8,10 @@ import './App.css';
 import { Header } from 'antd/lib/layout/layout';
 import { EditableCell } from './EditableCell';
 import { PrevEditableRow } from './PrevEditableRow';
+import { DownOutlined } from '@ant-design/icons'
 
 export const EditableContext = React.createContext(null);
+const {Option} = Select;
 
 class App extends React.Component {
   state = {
@@ -22,7 +24,7 @@ class App extends React.Component {
         task: 'Wake Up',
         description: 'Limit is 1000',
         created_at: new Date().toLocaleString('UTC'),
-        due_date: 34,
+        due_date: '2021-12-01',
         //tag: 'hello',
         status: 'OPEN'
       },
@@ -32,8 +34,8 @@ class App extends React.Component {
         task: 'Eat Food',
         description: 'Testing Words',
         created_at: new Date().toLocaleString('UTC'),
-        due_date: 90,
-        status: 'OPEN'
+        due_date: '2020-12-01',
+        status:  'OPEN'
       },
       {
         key: '3',
@@ -41,7 +43,7 @@ class App extends React.Component {
         task: 'Drink Water',
         description: 'Rock Crouch', 
         created_at: new Date().toLocaleString('UTC'),
-        due_date: 89,
+        due_date: '2020-12-01',
         status: 'OPEN'
       },
       {
@@ -50,14 +52,25 @@ class App extends React.Component {
         task: 'Sleep',
         description: 'Real Mansion',
         created_at: new Date('August 19, 1975 23:15:30 GMT+00:00').toLocaleString('UTC'),
-        due_date: 34,
+        due_date: '2020-12-01',
         status: 'OPEN'
       },
 
     ],
     count: 5
   };
-  
+  onClick = ({ key }) => {
+    
+    this.setState({})
+  };
+  menu = (
+  <Select defaultValue={"OPEN"}>
+    <Option value = "OPEN" key="1">OPEN</Option>
+    <Option value = "CLOSED" key="2">CLOSED</Option>
+    <Option value = "WORKING" key="3">WORKING</Option>
+  </Select>
+  );
+
 
   handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
@@ -102,8 +115,8 @@ class App extends React.Component {
       id: count,
       description: 'Describe task',
       created_at: new Date().toLocaleString('UTC'),
-      due_date: 89,
-      status: 'OPEN'
+      due_date: '2020-12-01',
+      status: 'OPEN' //change HERE
     };
     this.setState({
       dataSource: [...dataSource, newData],
@@ -121,12 +134,16 @@ class App extends React.Component {
     });
   };
 
-  onInputChange = (key, index) => {
+  onInputChange = (key, index, is_date = false) => {
     return (e) => {
-    const newData = [...this.state.dataSource];
-      newData[index][key] = Number(e.target.value);
-      console.log(newData)
-      this.setState({ dataSource: [...newData] })
+    if (e.target.value !== NaN) {
+      const newData = [...this.state.dataSource];
+        if (is_date)
+          console.log(typeof e.target.value)
+        newData[index][key] = String(e.target.value);
+        console.log(newData)
+        this.setState({ dataSource: [...newData] })
+      }
     }
   }
 
@@ -146,17 +163,12 @@ class App extends React.Component {
         title: 'Task ID',
         dataIndex: 'key',
         key: 'key',
+        width: '7%'
       },
       {
         title: 'Task',
         dataIndex: 'task',
         key: 'task',
-        filters: [
-          { text: 'Joe', value: 'Joe' },
-          { text: 'Jim', value: 'Jim' },
-        ],
-        filteredValue: filteredInfo.task || null,
-        onFilter: (value, record) => record.task.includes(value),
         sorter: (a, b) => a.task.length - b.task.length,
         sortOrder: sortedInfo.columnKey === 'task' && sortedInfo.order,
         ellipsis: true,
@@ -169,21 +181,20 @@ class App extends React.Component {
         title: 'Description',
         dataIndex: 'description',
         key: 'description',
-        filters: [
-          { text: 'London', value: 'London' },
-          { text: 'New York', value: 'New York' },
-        ],
-        filteredValue: filteredInfo.description || null,
-        onFilter: (value, record) => record.description.includes(value),
+        width: '20%',
         sorter: (a, b) => a.description.length - b.description.length,
         sortOrder: sortedInfo.columnKey === 'description' && sortedInfo.order,
         ellipsis: true,
+        render: (text, record, index) => (
+        <Input value={text} onChange={this.onInputChange("description", index)} />
+        )
       },
       {
       title: 'Created At',
       dataIndex: 'created_at',
+      key: 'created_at',
       valueType: 'dateRange',
-      sorter: (a, b) => a.created_at - b.created_at,
+      sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
       sortOrder: sortedInfo.columnKey === 'created_at' && sortedInfo.order,
       ellipsis: true
       },
@@ -191,14 +202,40 @@ class App extends React.Component {
         title: 'Due Date',
         dataIndex: 'due_date',
         key: 'due_date',
-        sorter: (a, b) => a.due_date - b.due_date,
+        sorter: (a, b) => { return new Date(a.due_date) - new Date(b.due_date)},
         sortOrder: sortedInfo.columnKey === 'due_date' && sortedInfo.order,
         ellipsis: true,  
+        render: (text, record, index) => {
+          return (
+          <Input
+                type="date"
+                name="due_date"
+                value={text}
+                onChange={this.onInputChange('due_date', index, true)} 
+              />
+          )
+      }
       },
       {
         title: 'Status',
         key: 'status',
-        dataIndex: 'status'
+        dataIndex: 'status',
+        width: '10%',
+        filters: [
+          { text: 'OPEN', value: 'OPEN' },
+          { text: 'Jim', value: 'Jim' },
+        ],
+        filteredValue: filteredInfo.status || null,
+        onFilter: (value, record) => record.status.includes(value),
+        render: (text) => {
+          return (
+          <Select defaultValue={"OPEN"}>OPEN
+          <Option value = "CLOSED" key="2">CLOSED</Option>
+          <Option value = "WORKING" key="3">WORKING</Option>
+          <Option value = "PAST DUE" key="1">OPEN</Option>
+          </Select>
+          )
+        }
       },   
       {
       title: 'Action',
