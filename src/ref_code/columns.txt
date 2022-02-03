@@ -1,5 +1,12 @@
-
-      /*hideInTable: true,
+      //Expandablle Description
+          expandable={{
+          expandedRowRender: record => 
+          <p style={{ margin: 0 }}>{record.description}</p>,
+          rowExpandable: record => record.name !== 'Not Expandable',
+          }}
+          //
+      /* In created at
+      hideInTable: true,
         search: {
           transform: (value) => {
             return {

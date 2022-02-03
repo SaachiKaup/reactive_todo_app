@@ -1,88 +1,15 @@
 //import {Form} from 'react-bootstrap/';
 import React, {useState, useRef, useContext, useEffect} from 'react';
-import { Table, Tag, Button, Space,Popconfirm, Switch, Menu, Dropdown, Input, Form} from 'antd';
+import { Table, Input, InputNumber, Tag, Button, Space, Popconfirm, Switch, Menu, Dropdown, Typography} from 'antd';
 import ProTable, {TableDropdown} from '@ant-design/pro-table'
 import 'antd/dist/antd.css';
 import './index.css';
 import './App.css';
 import { Header } from 'antd/lib/layout/layout';
+import { EditableCell } from './EditableCell';
+import { PrevEditableRow } from './PrevEditableRow';
 
-
-const EditableContext = React.createContext(null);
-
-function EditableRow({ index, ...props }) {
-  const [form] = Form.useForm();
-  return (
-    <Form form={form} component={false}>
-      <EditableContext.Provider value={form}>
-        <tr {...props} />
-      </EditableContext.Provider>
-    </Form>
-  );
-}
-
-function EditableCell({
-  title, editable, children, dataIndex, record, handleSave, ...restProps
-}) {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef(null);
-  const form = useContext(EditableContext);
-  useEffect(() => {
-    if (editing) {
-      inputRef.current.focus();
-    }
-  }, [editing]);
-
-  const toggleEdit = () => {
-    setEditing(!editing);
-    form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
-    });
-  };
-
-  async function save() {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleSave({ ...record, ...values });
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
-  }
-
-  let childNode = children;
-
-  if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{
-          margin: 0,
-        }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
-  }
-
-  return <td {...restProps}>{childNode}</td>;
-}
+export const EditableContext = React.createContext(null);
 
 class App extends React.Component {
   state = {
@@ -130,7 +57,7 @@ class App extends React.Component {
     ],
     count: 5
   };
- 
+  
 
   handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
@@ -194,6 +121,14 @@ class App extends React.Component {
     });
   };
 
+  onInputChange = (key, index) => {
+    return (e) => {
+    const newData = [...this.state.dataSource];
+      newData[index][key] = Number(e.target.value);
+      console.log(newData)
+      this.setState({ dataSource: [...newData] })
+    }
+  }
 
   render() {
     let { sortedInfo, filteredInfo, dataSource } = this.state;
@@ -201,7 +136,7 @@ class App extends React.Component {
     filteredInfo = filteredInfo || {};
     const components = {
       body: {
-        row: EditableRow,
+        row: PrevEditableRow,
         cell: EditableCell,
       },
     };
@@ -225,7 +160,24 @@ class App extends React.Component {
         sorter: (a, b) => a.task.length - b.task.length,
         sortOrder: sortedInfo.columnKey === 'task' && sortedInfo.order,
         ellipsis: true,
-        editable: true
+        editable: true,
+        render: (text, record, index) => (
+        <Input value={text} onChange={this.onInputChange("task", index)} />
+       )
+      },
+      {
+        title: 'Description',
+        dataIndex: 'description',
+        key: 'description',
+        filters: [
+          { text: 'London', value: 'London' },
+          { text: 'New York', value: 'New York' },
+        ],
+        filteredValue: filteredInfo.description || null,
+        onFilter: (value, record) => record.description.includes(value),
+        sorter: (a, b) => a.description.length - b.description.length,
+        sortOrder: sortedInfo.columnKey === 'description' && sortedInfo.order,
+        ellipsis: true,
       },
       {
       title: 'Created At',
@@ -278,7 +230,7 @@ class App extends React.Component {
           handlesave: this.handleSave,
         }),
       };
-    });
+    })
     
     return (
       <>
@@ -291,17 +243,12 @@ class App extends React.Component {
         >
           Add a row
         </Button>
-        <Space style={{ marginBottom: 16 }}>
+        <Space style={{ margin: 16 }}>
           <Button onClick={this.clearFilters}>Clear filters</Button>
           <Button onClick={this.clearAll}>Clear filters and sorters</Button>
         </Space>
         <Table
           columns={editable_columns}
-          expandable={{
-          expandedRowRender: record => 
-          <p style={{ margin: 0 }}>{record.description}</p>,
-          rowExpandable: record => record.name !== 'Not Expandable',
-          }}
           components={this.components}
           rowClassName={() => 'editable-row'}
           dataSource={dataSource} 
