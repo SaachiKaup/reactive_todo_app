@@ -1,0 +1,9 @@
+
+setAgeSort = () => {
+    this.setState({
+      sortedInfo: {
+        order: 'descend',
+        columnKey: 'due_date',
+      },
+    });
+  };

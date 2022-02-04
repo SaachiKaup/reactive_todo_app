@@ -1,14 +1,12 @@
 //import {Form} from 'react-bootstrap/';
-import React, {useState, useRef, useContext, useEffect} from 'react';
-import { Table, Input, InputNumber, Tag, Button, Space, Popconfirm, Switch, Menu, Dropdown, Select, message, Typography} from 'antd';
-import ProTable, {TableDropdown} from '@ant-design/pro-table'
+import React from 'react';
+import {Table, Input, Button, Space, Popconfirm, Select, message} from 'antd';
+import Highlighter from "react-highlight-words";
 import 'antd/dist/antd.css';
 import './index.css';
 import './App.css';
-import { Header } from 'antd/lib/layout/layout';
 import { EditableCell } from './EditableCell';
 import { PrevEditableRow } from './PrevEditableRow';
-import { DownOutlined } from '@ant-design/icons'
 
 export const EditableContext = React.createContext(null);
 const {Option} = Select;
@@ -24,7 +22,7 @@ class App extends React.Component {
         task: 'Wake Up',
         description: 'Limit is 1000',
         created_at: new Date().toLocaleString('UTC'),
-        due_date: '2021-12-01',
+        due_date: 'yyyy-MM-dd',
         //tag: 'hello',
         status: 'OPEN'
       },
@@ -34,7 +32,7 @@ class App extends React.Component {
         task: 'Eat Food',
         description: 'Testing Words',
         created_at: new Date().toLocaleString('UTC'),
-        due_date: '2020-12-01',
+        due_date: 'yyyy-MM-dd',
         status:  'OPEN'
       },
       {
@@ -43,8 +41,8 @@ class App extends React.Component {
         task: 'Drink Water',
         description: 'Rock Crouch', 
         created_at: new Date().toLocaleString('UTC'),
-        due_date: '2020-12-01',
-        status: 'OPEN'
+        due_date: 'yyyy-MM-dd',
+        status: 'CLOSED'
       },
       {
         key: '4',
@@ -52,28 +50,19 @@ class App extends React.Component {
         task: 'Sleep',
         description: 'Real Mansion',
         created_at: new Date('August 19, 1975 23:15:30 GMT+00:00').toLocaleString('UTC'),
-        due_date: '2020-12-01',
+        due_date: 'yyyy-MM-dd',
         status: 'OPEN'
       },
 
     ],
-    count: 5
+    count: 5,
   };
-  onClick = ({ key }) => {
-    
+
+  onClick = ({ key }) => {  
     this.setState({})
   };
-  menu = (
-  <Select defaultValue={"OPEN"}>
-    <Option value = "OPEN" key="1">OPEN</Option>
-    <Option value = "CLOSED" key="2">CLOSED</Option>
-    <Option value = "WORKING" key="3">WORKING</Option>
-  </Select>
-  );
-
 
   handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
     this.setState({
       filteredInfo: filters,
       sortedInfo: sorter,
@@ -91,16 +80,7 @@ class App extends React.Component {
     });
   };
 
-  setAgeSort = () => {
-    this.setState({
-      sortedInfo: {
-        order: 'descend',
-        columnKey: 'due_date',
-      },
-    });
-  };
-  
-   handleDelete = (key) => {
+  handleDelete = (key) => {
     const dataSource = [...this.state.dataSource];
     this.setState({
       dataSource: dataSource.filter((item) => item.key !== key),
@@ -115,8 +95,14 @@ class App extends React.Component {
       id: count,
       description: 'Describe task',
       created_at: new Date().toLocaleString('UTC'),
-      due_date: '2020-12-01',
-      status: 'OPEN' //change HERE
+      due_date: 'yyyy-MM-dd',
+      status: 
+          
+        `<Select defaultValue={"OPEN"}>OPEN
+          <Option value = "CLOSED" key="2">CLOSED</Option>
+          <Option value = "WORKING" key="3">WORKING</Option>
+          <Option value = "PAST DUE" key="1">OPEN</Option>
+          </Select>`
     };
     this.setState({
       dataSource: [...dataSource, newData],
@@ -134,18 +120,27 @@ class App extends React.Component {
     });
   };
 
-  onInputChange = (key, index, is_date = false) => {
-    return (e) => {
-    if (e.target.value !== NaN) {
+  onInputChange = (key, index, is_mandatory = false) => {
+    return e => {
+    console.log(e.target.value)
+    
+    if (e.target.value.length > 0 || (e.target.value !== null && is_mandatory)) {
       const newData = [...this.state.dataSource];
-        if (is_date)
-          console.log(typeof e.target.value)
-        newData[index][key] = String(e.target.value);
-        console.log(newData)
-        this.setState({ dataSource: [...newData] })
+      if (key === 'due_date') {
+        const threshold = newData[index]['created_at']
+        if (new Date(e.target.value) < new Date(threshold)) {
+          message.info('Date is less than created date')
+          return 
+        }
+        if (new Date(e.target.value) < new Date()) {
+          newData[index]['status'] = 'PAST DUE'
+        }
       }
-    }
-  }
+      newData[index][key] = String(e.target.value);
+      this.setState({ dataSource: [...newData] })
+      };
+    };
+  };
 
   render() {
     let { sortedInfo, filteredInfo, dataSource } = this.state;
@@ -157,7 +152,6 @@ class App extends React.Component {
         cell: EditableCell,
       },
     };
-    console.log(components.body)
     const columns = [
       { 
         title: 'Task ID',
@@ -174,7 +168,7 @@ class App extends React.Component {
         ellipsis: true,
         editable: true,
         render: (text, record, index) => (
-        <Input value={text} onChange={this.onInputChange("task", index)} />
+        <Input maxLength = {100} value={text} onChange={this.onInputChange("task", index)}/>
        )
       },
       {
@@ -184,9 +178,10 @@ class App extends React.Component {
         width: '20%',
         sorter: (a, b) => a.description.length - b.description.length,
         sortOrder: sortedInfo.columnKey === 'description' && sortedInfo.order,
+        onFilter: (value, record) => record.status.includes(value),
         ellipsis: true,
         render: (text, record, index) => (
-        <Input value={text} onChange={this.onInputChange("description", index)} />
+        <Input maxLength = {1000} value={text} onChange={this.onInputChange("description", index, true)} />
         )
       },
       {
@@ -196,6 +191,7 @@ class App extends React.Component {
       valueType: 'dateRange',
       sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
       sortOrder: sortedInfo.columnKey === 'created_at' && sortedInfo.order,
+      sortDirections: ['descend', 'ascend', 'descend'],
       ellipsis: true
       },
       {
@@ -204,6 +200,7 @@ class App extends React.Component {
         key: 'due_date',
         sorter: (a, b) => { return new Date(a.due_date) - new Date(b.due_date)},
         sortOrder: sortedInfo.columnKey === 'due_date' && sortedInfo.order,
+        sortDirections: ['descend', 'ascend', 'descend'],
         ellipsis: true,  
         render: (text, record, index) => {
           return (
@@ -222,17 +219,21 @@ class App extends React.Component {
         dataIndex: 'status',
         width: '10%',
         filters: [
+
           { text: 'OPEN', value: 'OPEN' },
-          { text: 'Jim', value: 'Jim' },
+          { text: 'CLOSED', value: 'CLOSED' },
+          { text: 'WORKING', value: 'WORKING' },
+          { text: 'PAST DUE', value: 'PAST DUE' },
         ],
         filteredValue: filteredInfo.status || null,
         onFilter: (value, record) => record.status.includes(value),
         render: (text) => {
           return (
-          <Select defaultValue={"OPEN"}>OPEN
+          <Select defaultValue = {text}>text
+          <Option value={"OPEN"}>OPEN</Option>
           <Option value = "CLOSED" key="2">CLOSED</Option>
           <Option value = "WORKING" key="3">WORKING</Option>
-          <Option value = "PAST DUE" key="1">OPEN</Option>
+          <Option value = "PAST DUE" key="1">PAST DUE</Option>
           </Select>
           )
         }
@@ -241,7 +242,6 @@ class App extends React.Component {
       title: 'Action',
       dataIndex: '',
       key: 'x',
-      //render: () => <a href = '#'>Delete</a>,
       render: (_, record) =>
           {
             return this.state.dataSource.length >= 1 ? (
@@ -286,12 +286,12 @@ class App extends React.Component {
         </Space>
         <Table
           columns={editable_columns}
-          components={this.components}
+          components={components}
           rowClassName={() => 'editable-row'}
           dataSource={dataSource} 
           pagination={{pageSize: 10,}}
           dateFormatter="string"
-          
+          scroll={{ x: 1450, y: 300 }}
           onChange={this.handleChange}
          />
       </>

@@ -50,3 +50,15 @@
         dataIndex: 'tags',
         tag: 'hel'
       },*/
+      <Input.Search
+          allowClear
+          placeholder="search"
+          value={this.searchVal}
+          onPressEnter={this.setSearchVal()}
+          allowClear
+        />
+  handleSearch = (selectedKeys, confirm) => {
+    confirm();
+    this.setState({ sRT: selectedKeys[0] });
+    
+  };
