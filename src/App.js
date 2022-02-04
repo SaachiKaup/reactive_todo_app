@@ -122,7 +122,6 @@ class App extends React.Component {
 
   onInputChange = (key, index, is_mandatory = false) => {
     return e => {
-    console.log(e.target.value)
     
     if (e.target.value.length > 0 || (e.target.value !== null && is_mandatory)) {
       const newData = [...this.state.dataSource];
