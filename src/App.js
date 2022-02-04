@@ -6,11 +6,12 @@ import './App.css';
 import { EditableCell } from './EditableCell';
 import { EditableRow } from './EditableRow';
 
-export const EditableContext = React.createContext(null);
 const {Option} = Select;
 
 class App extends React.Component {
   state = {
+    //dataSource is maintained as a state so that it can be changed
+    //filteredInfo allows for filtering data from each column
     filteredInfo: null,
     sortedInfo: null,
     dataSource: [
@@ -18,10 +19,9 @@ class App extends React.Component {
         key: '1',
         id: 1,
         task: 'Wake Up',
-        description: 'Limit is 1000',
+        description: 'Medium length desc',
         created_at: new Date().toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
-        //tag: 'hello',
         status: 'OPEN'
       },
       {
@@ -37,7 +37,7 @@ class App extends React.Component {
         key: '3',
         id: 3,
         task: 'Drink Water',
-        description: 'Rock Crouch', 
+        description: 'Description of greates size', 
         created_at: new Date().toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
         status: 'WORKING'
@@ -46,7 +46,7 @@ class App extends React.Component {
         key: '4',
         id: 4,
         task: 'Sleep',
-        description: 'Real Mansion',
+        description: 'Short desc',
         created_at: new Date('August 19, 1975 23:15:30 GMT+00:00').toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
         status: 'PAST DUE'
@@ -112,10 +112,12 @@ class App extends React.Component {
     });
   };
 
+  //Function to handle changes to input forms
   onInputChange = (key, index, is_mandatory = false) => {
     return e => {
     const search_text = e.target.value
     const search_date = new Date(search_text).toLocaleString('UTC')
+    //does not allow task field to have less than one character
     if (search_text === '') {
       message.info('Field cannot be empty')
     }
@@ -123,12 +125,14 @@ class App extends React.Component {
       const newData = [...this.state.dataSource];
       if (key === 'due_date') {
         const threshold = newData[index]['created_at']
+        //checks if date is less than lower threshold
         if (search_date < new Date(threshold)) {
           message.info('Date is less than created date')
-          return 
+          return //cannot continue if true
         }
         if (search_date < new Date()) {
-          newData[index]['status'] = 'PAST DUE'
+          newData[index]['status'] = 'PAST DUE' 
+          //changes status when time exceeds
         }
       }
       newData[index][key] = String(search_text);
@@ -147,6 +151,7 @@ class App extends React.Component {
         cell: EditableCell,
       },
     };
+    //columns described here
     const columns = [
       { 
         title: 'Task ID',
@@ -176,6 +181,7 @@ class App extends React.Component {
         onFilter: (value, record) => record.status.includes(value),
         ellipsis: true,
         render: (text, record, index) => (
+          //description is mandatory: therefore true is passed as an argument
         <Input maxLength = {1000} value={text} onChange={this.onInputChange("description", index, true)} />
         )
       },
@@ -196,6 +202,9 @@ class App extends React.Component {
         sorter: (a, b) => { return new Date(a.due_date) - new Date(b.due_date)},
         sortOrder: sortedInfo.columnKey === 'due_date' && sortedInfo.order,
         sortDirections: ['descend', 'ascend', 'descend'],
+        /*above code sorts in ascending or descending manner
+        does not maintain a neutral value if it is sorted
+        */
         ellipsis: true,  
         render: (text, record, index) => {
           return (
@@ -203,6 +212,7 @@ class App extends React.Component {
                 type="date"
                 name="due_date"
                 value={text}
+                //due date is mandatory
                 onChange={this.onInputChange('due_date', index, true)} 
               />
           )
@@ -214,7 +224,7 @@ class App extends React.Component {
         dataIndex: 'status',
         width: '10%',
         filters: [
-
+          //possible options
           { text: 'OPEN', value: 'OPEN' },
           { text: 'CLOSED', value: 'CLOSED' },
           { text: 'WORKING', value: 'WORKING' },
@@ -286,7 +296,7 @@ class App extends React.Component {
           dataSource={dataSource} 
           pagination={{pageSize: 10,}}
           dateFormatter="string"
-          scroll={{ x: 1450, y: 300 }}
+          scroll={{ x: 1450, y: 300 }} /*allow for scrolling to make it mobile friendly*/
           onChange={this.handleChange}
          />
       </>
