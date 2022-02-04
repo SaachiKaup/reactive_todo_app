@@ -1,12 +1,10 @@
-//import {Form} from 'react-bootstrap/';
 import React from 'react';
 import {Table, Input, Button, Space, Popconfirm, Select, message} from 'antd';
-import Highlighter from "react-highlight-words";
 import 'antd/dist/antd.css';
 import './index.css';
 import './App.css';
 import { EditableCell } from './EditableCell';
-import { PrevEditableRow } from './PrevEditableRow';
+import { EditableRow } from './EditableRow';
 
 export const EditableContext = React.createContext(null);
 const {Option} = Select;
@@ -33,7 +31,7 @@ class App extends React.Component {
         description: 'Testing Words',
         created_at: new Date().toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
-        status:  'OPEN'
+        status:  'CLOSED'
       },
       {
         key: '3',
@@ -42,7 +40,7 @@ class App extends React.Component {
         description: 'Rock Crouch', 
         created_at: new Date().toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
-        status: 'CLOSED'
+        status: 'WORKING'
       },
       {
         key: '4',
@@ -51,7 +49,7 @@ class App extends React.Component {
         description: 'Real Mansion',
         created_at: new Date('August 19, 1975 23:15:30 GMT+00:00').toLocaleString('UTC'),
         due_date: 'yyyy-MM-dd',
-        status: 'OPEN'
+        status: 'PAST DUE'
       },
 
     ],
@@ -96,13 +94,7 @@ class App extends React.Component {
       description: 'Describe task',
       created_at: new Date().toLocaleString('UTC'),
       due_date: 'yyyy-MM-dd',
-      status: 
-          
-        `<Select defaultValue={"OPEN"}>OPEN
-          <Option value = "CLOSED" key="2">CLOSED</Option>
-          <Option value = "WORKING" key="3">WORKING</Option>
-          <Option value = "PAST DUE" key="1">OPEN</Option>
-          </Select>`
+      status: 'OPEN'
     };
     this.setState({
       dataSource: [...dataSource, newData],
@@ -122,20 +114,24 @@ class App extends React.Component {
 
   onInputChange = (key, index, is_mandatory = false) => {
     return e => {
-    
-    if (e.target.value.length > 0 || (e.target.value !== null && is_mandatory)) {
+    const search_text = e.target.value
+    const search_date = new Date(search_text).toLocaleString('UTC')
+    if (search_text === '') {
+      message.info('Field cannot be empty')
+    }
+    else if (search_text.length !== '' || (search_text !== null && is_mandatory)) {
       const newData = [...this.state.dataSource];
       if (key === 'due_date') {
         const threshold = newData[index]['created_at']
-        if (new Date(e.target.value) < new Date(threshold)) {
+        if (search_date < new Date(threshold)) {
           message.info('Date is less than created date')
           return 
         }
-        if (new Date(e.target.value) < new Date()) {
+        if (search_date < new Date()) {
           newData[index]['status'] = 'PAST DUE'
         }
       }
-      newData[index][key] = String(e.target.value);
+      newData[index][key] = String(search_text);
       this.setState({ dataSource: [...newData] })
       };
     };
@@ -147,7 +143,7 @@ class App extends React.Component {
     filteredInfo = filteredInfo || {};
     const components = {
       body: {
-        row: PrevEditableRow,
+        row: EditableRow,
         cell: EditableCell,
       },
     };
