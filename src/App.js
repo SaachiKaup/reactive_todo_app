@@ -249,7 +249,7 @@ class App extends React.Component {
       dataIndex: '',
       key: 'x',
       render: (_, record) =>
-          {
+          { //confirms the delete operation
             return this.state.dataSource.length >= 1 ? (
               <Popconfirm title="Sure to delete?" onConfirm={() => this.handleDelete(record.key)}>
                 <a>Delete</a>
@@ -262,7 +262,6 @@ class App extends React.Component {
       if (!col.editable) {
         return col;
       }
-      console.log('in editable col')
       return {
         ...col,
         onCell: (record) => ({
@@ -297,7 +296,7 @@ class App extends React.Component {
           dataSource={dataSource} 
           pagination={{pageSize: 10,}}
           dateFormatter="string"
-          scroll={{ x: 1450, y: 300 }} /*allow for scrolling to make it mobile friendly*/
+          scroll={{ x: 1450, y: 300 }} /*allows for scrolling to make it mobile friendly*/
           onChange={this.handleChange}
          />
       </>

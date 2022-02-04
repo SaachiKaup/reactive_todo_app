@@ -10,4 +10,4 @@ Steps <br />
 
 Browser will start running the locally hosted site <br />
 
-Note: While adding/editing rows, please ensure all the filters are cleared out
+Note: While adding/editing rows, please ensure all the filters are cleared out.
