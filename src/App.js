@@ -5,6 +5,7 @@ import './index.css';
 import './App.css';
 import { EditableCell } from './EditableCell';
 import { EditableRow } from './EditableRow';
+export const EditableContext = React.createContext(null);
 
 const {Option} = Select;
 
